@@ -26,6 +26,8 @@ const BLEED = 2;
 const DEST_SIZE = PHOTO.r * 2 + BLEED * 2;
 
 export const CENTER_PAN: Pan = { x: 0.5, y: 0.5 };
+export const ZOOM_MIN = 1;
+export const ZOOM_MAX = 3;
 
 export function loadFileAsBitmap(file: File): Promise<ImageBitmap> {
 	return createImageBitmap(file, { imageOrientation: 'from-image' });
@@ -61,23 +63,25 @@ function clamp(v: number, min = 0, max = 1): number {
 export function panDelta(
 	photo: ImageBitmap | HTMLImageElement,
 	dx: number,
-	dy: number
+	dy: number,
+	zoom: number = 1
 ): Pan {
 	const sw = sourceWidth(photo);
 	const sh = sourceHeight(photo);
-	const m = Math.min(sw, sh);
-	const xRange = sw - m;
-	const yRange = sh - m;
+	const c = Math.min(sw, sh) / zoom;
+	const xRange = sw - c;
+	const yRange = sh - c;
 	return {
-		x: xRange > 0 ? (-dx * m) / (DEST_SIZE * xRange) : 0,
-		y: yRange > 0 ? (-dy * m) / (DEST_SIZE * yRange) : 0
+		x: xRange > 0 ? (-dx * c) / (DEST_SIZE * xRange) : 0,
+		y: yRange > 0 ? (-dy * c) / (DEST_SIZE * yRange) : 0
 	};
 }
 
 export function composeFrame(
 	photo: ImageBitmap | HTMLImageElement,
 	frame: HTMLImageElement,
-	pan: Pan = CENTER_PAN
+	pan: Pan = CENTER_PAN,
+	zoom: number = 1
 ): HTMLCanvasElement {
 	const canvas = document.createElement('canvas');
 	canvas.width = OUTPUT_SIZE;
@@ -86,13 +90,15 @@ export function composeFrame(
 	const ctx = canvas.getContext('2d');
 	if (!ctx) throw new Error('Canvas 2D context is unavailable');
 
-	// Cover-fit the photo: the smaller source dimension fills the opening,
-	// the larger dimension overflows and is positioned by `pan` (0..1).
+	// Cover-fit the photo: the smaller source dimension fills the opening at
+	// zoom 1, then `zoom` shrinks the source crop to magnify it. Pan (0..1)
+	// positions the overflow in each axis.
+	const z = clamp(zoom, ZOOM_MIN, ZOOM_MAX);
 	const sw = sourceWidth(photo);
 	const sh = sourceHeight(photo);
-	const m = Math.min(sw, sh);
-	const srcX = clamp(pan.x) * (sw - m);
-	const srcY = clamp(pan.y) * (sh - m);
+	const c = Math.min(sw, sh) / z;
+	const srcX = clamp(pan.x) * (sw - c);
+	const srcY = clamp(pan.y) * (sh - c);
 
 	const destLeft = PHOTO.cx - PHOTO.r - BLEED;
 	const destTop = PHOTO.cy - PHOTO.r - BLEED;
@@ -103,7 +109,7 @@ export function composeFrame(
 	ctx.beginPath();
 	ctx.arc(PHOTO.cx, PHOTO.cy, PHOTO.r + BLEED, 0, Math.PI * 2);
 	ctx.clip();
-	ctx.drawImage(photo, srcX, srcY, m, m, destLeft, destTop, DEST_SIZE, DEST_SIZE);
+	ctx.drawImage(photo, srcX, srcY, c, c, destLeft, destTop, DEST_SIZE, DEST_SIZE);
 	ctx.restore();
 
 	// Overlay the frame (transparent PNG carrying the ring and banner).

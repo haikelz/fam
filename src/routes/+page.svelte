@@ -5,6 +5,8 @@
 		type FrameId,
 		type Pan,
 		CENTER_PAN,
+		ZOOM_MIN,
+		ZOOM_MAX,
 		loadFileAsBitmap,
 		loadFrame,
 		composeFrame,
@@ -20,14 +22,14 @@
 	let error = $state('');
 	let dragActive = $state(false);
 	let pan = $state<Pan>({ ...CENTER_PAN });
+	let zoom = $state(1);
 
 	let preview = $state<HTMLCanvasElement | null>(null);
 	let fileInput = $state<HTMLInputElement | null>(null);
 
 	let panning = $state<{ startX: number; startY: number; pan: Pan } | null>(null);
-
+	const isChanged = $derived(pan.x !== CENTER_PAN.x || pan.y !== CENTER_PAN.y || zoom !== 1);
 	const selectedFrame = $derived(FRAMES.find((f) => f.id === frameId) ?? FRAMES[0]);
-	const isPanned = $derived(pan.x !== CENTER_PAN.x || pan.y !== CENTER_PAN.y);
 
 	$effect(() => {
 		let cancelled = false;
@@ -45,7 +47,7 @@
 
 	$effect(() => {
 		if (!preview || !photoBitmap || !frameImage) return;
-		const canvas = composeFrame(photoBitmap, frameImage, pan);
+		const canvas = composeFrame(photoBitmap, frameImage, pan, zoom);
 		const ctx = preview.getContext('2d');
 		if (!ctx) return;
 		ctx.clearRect(0, 0, preview.width, preview.height);
@@ -118,6 +120,7 @@
 			photoFile = file;
 			photoBitmap = bitmap;
 			pan = { ...CENTER_PAN };
+			zoom = 1;
 		} catch {
 			error = 'Could not read that image. Try another file.';
 		} finally {
@@ -131,8 +134,21 @@
 		if (file) handleFile(file);
 	}
 
-	function resetPan() {
+	function clampZoom(v: number): number {
+		return v < ZOOM_MIN ? ZOOM_MIN : v > ZOOM_MAX ? ZOOM_MAX : v;
+	}
+
+	function zoomIn() {
+		zoom = clampZoom(zoom + 0.25);
+	}
+
+	function zoomOut() {
+		zoom = clampZoom(zoom - 0.25);
+	}
+
+	function resetTransform() {
 		pan = { ...CENTER_PAN };
+		zoom = 1;
 	}
 
 	function onPointerDown(e: PointerEvent) {
@@ -149,7 +165,7 @@
 		const scale = canvas.width / rect.width;
 		const dx = (e.clientX - panning.startX) * scale;
 		const dy = (e.clientY - panning.startY) * scale;
-		const d = panDelta(photoBitmap, dx, dy);
+		const d = panDelta(photoBitmap, dx, dy, zoom);
 		pan = {
 			x: clampPan(panning.pan.x + d.x),
 			y: clampPan(panning.pan.y + d.y)
@@ -164,6 +180,16 @@
 
 	function onKeydown(e: KeyboardEvent) {
 		if (!photoBitmap) return;
+		if (e.key === '+' || e.key === '=') {
+			e.preventDefault();
+			zoomIn();
+			return;
+		}
+		if (e.key === '-' || e.key === '_') {
+			e.preventDefault();
+			zoomOut();
+			return;
+		}
 		const step = 0.02;
 		let dx = 0;
 		let dy = 0;
@@ -174,6 +200,12 @@
 		else return;
 		e.preventDefault();
 		pan = { x: clampPan(pan.x + dx), y: clampPan(pan.y + dy) };
+	}
+
+	function onWheel(e: WheelEvent) {
+		if (!photoBitmap) return;
+		e.preventDefault();
+		zoom = clampZoom(zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1));
 	}
 
 	function download() {
@@ -334,12 +366,13 @@
 						height={800}
 						class="h-auto w-full cursor-grab touch-none select-none active:cursor-grabbing"
 						tabindex="0"
-						aria-label="Photo preview. Drag or use the arrow keys to reposition the photo."
+						aria-label="Photo preview. Drag to reposition, scroll or use plus/minus to zoom, or use the arrow keys."
 						onpointerdown={onPointerDown}
 						onpointermove={onPointerMove}
 						onpointerup={onPointerUp}
 						onpointercancel={onPointerUp}
 						onkeydown={onKeydown}
+						onwheel={onWheel}
 					></canvas>
 				{:else}
 					<div class="flex aspect-square w-full items-center justify-center text-muted-foreground">
@@ -365,17 +398,38 @@
 				{/if}
 			</div>
 			{#if photoBitmap}
-				<div class="flex items-center justify-between gap-4">
-					<p class="text-xs text-muted-foreground">Drag on the photo to reposition it.</p>
-					{#if isPanned}
+				<div class="flex flex-wrap items-center justify-between gap-3">
+					<p class="text-xs text-muted-foreground">Drag to reposition · scroll to zoom</p>
+					<div class="flex items-center gap-2">
 						<button
 							type="button"
-							onclick={resetPan}
-							class="btn btn-ghost btn-xs shrink-0 border border-border/40"
+							onclick={zoomOut}
+							aria-label="Zoom out"
+							class="btn btn-ghost btn-xs border border-border/40"
+							disabled={zoom <= ZOOM_MIN}
 						>
-							Reset position
+							−
 						</button>
-					{/if}
+						<span class="text-xs tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
+						<button
+							type="button"
+							onclick={zoomIn}
+							aria-label="Zoom in"
+							class="btn btn-ghost btn-xs border border-border/40"
+							disabled={zoom >= ZOOM_MAX}
+						>
+							+
+						</button>
+						{#if isChanged}
+							<button
+								type="button"
+								onclick={resetTransform}
+								class="btn btn-ghost btn-xs shrink-0 border border-border/40"
+							>
+								Reset
+							</button>
+						{/if}
+					</div>
 				</div>
 			{/if}
 		</div>
