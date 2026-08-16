@@ -1,0 +1,108 @@
+@import 'tailwindcss';
+
+@plugin "daisyui" {
+	themes: false;
+}
+
+/* ekel.dev — minimal, flat, OKLCH semantic tokens */
+
+@plugin "daisyui/theme" {
+	name: "ekel";
+	default: true;
+	color-scheme: light;
+	--color-base-100: oklch(0.97 0 0);
+	--color-base-200: oklch(0.92 0 0);
+	--color-base-300: oklch(0.88 0 0);
+	--color-base-content: oklch(0.175 0 0);
+	--color-primary: oklch(0.175 0 0);
+	--color-primary-content: oklch(0.97 0 0);
+	--color-secondary: oklch(0.92 0 0);
+	--color-secondary-content: oklch(0.175 0 0);
+	--color-accent: oklch(0.52 0.11 145);
+	--color-accent-content: oklch(0.98 0 0);
+	--color-neutral: oklch(0.3 0 0);
+	--color-neutral-content: oklch(0.97 0 0);
+	--color-info: oklch(0.55 0.18 250);
+	--color-info-content: oklch(0.98 0 0);
+	--color-success: oklch(0.55 0.14 150);
+	--color-success-content: oklch(0.98 0 0);
+	--color-warning: oklch(0.75 0.16 80);
+	--color-warning-content: oklch(0.25 0 0);
+	--color-error: oklch(0.55 0.2 25);
+	--color-error-content: oklch(0.98 0 0);
+	--radius-selector: 0rem;
+	--radius-field: 0rem;
+	--radius-box: 0rem;
+	--size-selector: 0.25rem;
+	--size-field: 0.25rem;
+	--border: 1px;
+	--depth: 0;
+	--noise: 0;
+}
+
+@plugin "daisyui/theme" {
+	name: "ekel-dark";
+	color-scheme: dark;
+	--color-base-100: oklch(0.175 0 0);
+	--color-base-200: oklch(0.22 0 0);
+	--color-base-300: oklch(0.32 0 0);
+	--color-base-content: oklch(0.97 0 0);
+	--color-primary: oklch(0.97 0 0);
+	--color-primary-content: oklch(0.175 0 0);
+	--color-secondary: oklch(0.27 0 0);
+	--color-secondary-content: oklch(0.97 0 0);
+	--color-accent: oklch(0.62 0.13 145);
+	--color-accent-content: oklch(0.175 0 0);
+	--color-neutral: oklch(0.55 0 0);
+	--color-neutral-content: oklch(0.97 0 0);
+	--color-info: oklch(0.62 0.17 250);
+	--color-info-content: oklch(0.175 0 0);
+	--color-success: oklch(0.65 0.15 150);
+	--color-success-content: oklch(0.175 0 0);
+	--color-warning: oklch(0.75 0.16 80);
+	--color-warning-content: oklch(0.25 0 0);
+	--color-error: oklch(0.62 0.2 25);
+	--color-error-content: oklch(0.175 0 0);
+	--radius-selector: 0rem;
+	--radius-field: 0rem;
+	--radius-box: 0rem;
+	--size-selector: 0.25rem;
+	--size-field: 0.25rem;
+	--border: 1px;
+	--depth: 0;
+	--noise: 0;
+}
+
+/* Semantic tokens from the ekel.dev design system */
+@theme {
+	--color-background: oklch(0.97 0 0);
+	--color-foreground: oklch(0.175 0 0);
+	--color-card: oklch(1 0 0);
+	--color-muted: oklch(0.92 0 0);
+	--color-muted-foreground: oklch(0.45 0 0);
+	--color-border: oklch(0.88 0 0);
+	--font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.dark {
+	--color-background: oklch(0.175 0 0);
+	--color-foreground: oklch(0.97 0 0);
+	--color-card: oklch(0.22 0 0);
+	--color-muted: oklch(0.27 0 0);
+	--color-muted-foreground: oklch(0.68 0 0);
+	--color-border: oklch(0.32 0 0);
+}
+
+html {
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+code,
+kbd,
+samp,
+pre {
+	font-family: var(--font-mono);
+}
