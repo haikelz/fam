@@ -2,6 +2,9 @@
 
 Add a LinkedIn **Open to Work** or **Hiring** frame to your profile photo — entirely in the browser. Nothing is uploaded; you get back an 800×800 PNG ready for LinkedIn.
 
+| ![example-1.png](static/docs/example-1.png) | ![example-2.png](static/docs/example-2.png) |
+| ------------------------------------------- | ------------------------------------------- |
+
 ## Features
 
 - Drag-and-drop a photo anywhere on the page, or click to browse.
@@ -16,25 +19,6 @@ Add a LinkedIn **Open to Work** or **Hiring** frame to your profile photo — en
 
 ## How it works
 
+![ss2.png](static/docs/ss2.png)
+
 The frame overlays (`static/frames/opentowork.png`, `static/frames/hiring.png`) are 800×800 transparent PNGs. `src/lib/compose.ts` center-crops your photo, draws it as the ring's inner circle, and composites the frame on top. The ring hugs the left of the photo and the banner overlaps its bottom.
-
-## Getting started
-
-```sh
-bun install
-bun run dev
-```
-
-Open http://localhost:5173.
-
-## Building
-
-```sh
-bun run build
-bun run preview
-```
-
-## Brand assets
-
-- `static/logo.svg` — favicon / logo
-- `static/opengraph.png` — 1200×630 social card, referenced by the OpenGraph and Twitter tags
