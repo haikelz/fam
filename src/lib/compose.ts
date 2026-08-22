@@ -27,10 +27,10 @@ export const FRAMES: Frame[] = [
   },
 ];
 
-// The photo fills the full 800×800 output circle (radius 400, tangent to all
-// edges). The frame — ring on the left, banner on the bottom — is drawn on top
-// of the photo, so it reads as merged into the image, not an external border.
-const PHOTO = { cx: 400, cy: 400, r: 400 };
+// Geometry measured from the 800×800 frame PNGs. Keep the photo inside this
+// opening so the frame's ring and banner remain visible and the outer canvas
+// stays transparent.
+const PHOTO = { cx: 400, cy: 399, r: 270 };
 const OUTPUT_SIZE = 800;
 const BLEED = 2;
 const DEST_SIZE = PHOTO.r * 2 + BLEED * 2;
